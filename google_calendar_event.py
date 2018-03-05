@@ -96,14 +96,17 @@ def update_text():
         count += 1
 
     # Sets any specified sources to blank if here is no event 
-    text = ""
-    settings = obs.obs_data_create()
-    obs.obs_data_set_string(settings, "text", text)
     for x in range(count, max_events):
+        text = ""
+        settings = obs.obs_data_create()
+        obs.obs_data_set_string(settings, "text", text)
         source = obs.obs_get_source_by_name(source_names[x])
         obs.obs_source_update(source, settings)
         obs.obs_data_release(settings)
         obs.obs_source_release(source)
+        print(x)
+        print(source_names[x])
+
 
 
 # ------------------------------------------------------------
