@@ -20,6 +20,8 @@ cal_url     = ""
 interval    = 30
 max_events  = 3
 source_names = [""]*max_events
+image_sources = [""]*max_events
+images_path = ''
 
 # ------------------------------------------------------------
 
@@ -63,6 +65,8 @@ def update_text():
     global source_names
     global CLIENT_SECRET_FILE
     global max_events
+    global images_path
+    global image_sources
         
     # Gets stored credentials (taken from Calendar API quickstart)
     credentials = get_credentials()
@@ -93,6 +97,15 @@ def update_text():
         obs.obs_source_update(source, settings)
         obs.obs_data_release(settings)
         obs.obs_source_release(source)
+
+        settings2 = obs.obs_data_create()
+        obs.obs_data_set_string(settings2, "file", "{}/{}.jpg".format(images_path, text))
+        source2 = obs.obs_get_source_by_name(image_sources[count])
+        obs.obs_source_update(source2, settings2)
+        obs.obs_data_release(settings2)
+        obs.obs_source_release(source2)
+
+
         count += 1
 
     # Sets any specified sources to blank if here is no event 
@@ -104,9 +117,13 @@ def update_text():
         obs.obs_source_update(source, settings)
         obs.obs_data_release(settings)
         obs.obs_source_release(source)
-        print(x)
-        print(source_names[x])
-
+        
+        settings2 = obs.obs_data_create()
+        obs.obs_data_set_string(settings2, "file", text)
+        source2 = obs.obs_get_source_by_name(image_sources[x])
+        obs.obs_source_update(source2, settings2)
+        obs.obs_data_release(settings2)
+        obs.obs_source_release(source2)
 
 
 # ------------------------------------------------------------
@@ -127,15 +144,22 @@ def script_update(settings):
     global source_names
     global CLIENT_SECRET_FILE
     global max_events
+    global images_path
+    global image_sources
 
     cal_url                = obs.obs_data_get_string(settings, "calendar_url")
     CLIENT_SECRET_FILE     = obs.obs_data_get_string(settings, "client_secret_file")
+    images_path            = obs.obs_data_get_string(settings, "images_path")
     interval               = obs.obs_data_get_int(settings, "interval")
     max_events             = obs.obs_data_get_int(settings, "max_events")
 
     source_names = [None]*max_events
     for x in range(0, max_events):
        source_names[x] = obs.obs_data_get_string(settings, "source_{}".format(x))
+
+    image_sources = [None]*max_events
+    for x in range(0, max_events):
+       image_sources[x] = obs.obs_data_get_string(settings, "img_source_{}".format(x))
 
     obs.timer_remove(update_text)
 
@@ -155,11 +179,15 @@ def script_properties():
 
     obs.obs_properties_add_text(props, "calendar_url", "Calendar URL", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_path(props, "client_secret_file", "Client Secret File", obs.OBS_PATH_FILE,'*.json', "")
+    obs.obs_properties_add_path(props, "images_path", "Images Folder", obs.OBS_PATH_DIRECTORY, '', "")
     obs.obs_properties_add_int(props, "interval", "Update Interval (seconds)", 5, 3600, 1)
     obs.obs_properties_add_int(props, "max_events", "Max Number of Events", 1, 15, 1)
 
     for x in range(0,max_events):
         p = obs.obs_properties_add_list(props, "source_{}".format(x), "Text Source {}".format(x + 1), 
+                                        obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+
+        img_p = obs.obs_properties_add_list(props, "img_source_{}".format(x), "Image Source {}".format(x + 1), 
                                         obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
 
         sources = obs.obs_enum_sources()
@@ -169,7 +197,9 @@ def script_properties():
                 if source_id == "text_gdiplus" or source_id == "text_ft2_source":
                     name = obs.obs_source_get_name(source)
                     obs.obs_property_list_add_string(p, name, name)
-
+                if source_id == "image_source":
+                    name = obs.obs_source_get_name(source)
+                    obs.obs_property_list_add_string(img_p, name, name)
             obs.source_list_release(sources)
 
     obs.obs_properties_add_button(props, "button", "Refresh", refresh_pressed)
