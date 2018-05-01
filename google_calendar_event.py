@@ -152,7 +152,7 @@ def refresh_pressed(props, prop):
 # ------------------------------------------------------------
 
 def script_description():
-    return "Upates text and images based on a Google Calendar events. \n" \
+    return "Upates text and images based on Google Calendar event titles. \n" \
            "An event with the title \"Stream\" will trigger streaming.\n" \
            "An event with the title \"Record\" will trigger recording.\n" \
            "Streaming/Recording will automatically stop if the corresponding event is no longer happening."
