@@ -67,7 +67,7 @@ def update_text():
     global max_events
     global images_path
     global image_sources
-        
+
     # Gets stored credentials (taken from Calendar API quickstart)
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
@@ -87,6 +87,8 @@ def update_text():
 
     # Updates the text for each event
     count = 0
+    stream_event_happening = False
+    record_event_happening = False
     for event in events['items']:
         if(count >= max_events):
             break
@@ -105,8 +107,24 @@ def update_text():
         obs.obs_data_release(settings2)
         obs.obs_source_release(source2)
 
-
         count += 1
+
+        # Checks for the "Stream" event and starts streaming if not doing so already
+        if text == "Stream":
+            stream_event_happening = True
+            if ~obs.obs_frontend_streaming_active():
+                obs.obs_frontend_streaming_start()
+        # Likewise, checks for "Record" event
+        elif text == "Record":
+            record_event_happening = True
+            if ~obs.obs_frontend_recording_active():
+                obs.obs_frontend_recording_start()
+
+    # Stops the stream/recording if the Google Calendar event is no longer occuring
+    if obs.obs_frontend_streaming_active() and not(stream_event_happening):
+        obs.obs_frontend_streaming_stop()
+    if obs.obs_frontend_recording_active() and not(record_event_happening):
+        obs.obs_frontend_recording_stop()
 
     # Sets any specified sources to blank if here is no event 
     for x in range(count, max_events):
