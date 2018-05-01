@@ -152,7 +152,10 @@ def refresh_pressed(props, prop):
 # ------------------------------------------------------------
 
 def script_description():
-    return "Upates text based on a Google Calendar event"
+    return "Upates text and images based on a Google Calendar events. \n" \
+           "An event with the title \"Stream\" will trigger streaming.\n" \
+           "An event with the title \"Record\" will trigger recording.\n" \
+           "Streaming/Recording will automatically stop if the corresponding event is no longer happening."
 
 # ------------------------------------------------------------
 
@@ -195,7 +198,7 @@ def script_defaults(settings):
 def script_properties():
     props = obs.obs_properties_create()
 
-    obs.obs_properties_add_text(props, "calendar_url", "Calendar URL", obs.OBS_TEXT_DEFAULT)
+    obs.obs_properties_add_text(props, "calendar_url", "Calendar ID", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_path(props, "client_secret_file", "Client Secret File", obs.OBS_PATH_FILE,'*.json', "")
     obs.obs_properties_add_path(props, "images_path", "Images Folder", obs.OBS_PATH_DIRECTORY, '', "")
     obs.obs_properties_add_int(props, "interval", "Update Interval (seconds)", 5, 3600, 1)
